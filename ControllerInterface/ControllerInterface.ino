@@ -1,8 +1,5 @@
 // #include "SoftwareSerial.h"
-struct __freelist {
-  size_t sz;
-  struct __freelist *nx;
-};
+#define NumOfAnomalies 12
 
 enum AnomalyType{
   POTHOLE,
@@ -16,16 +13,21 @@ typedef struct {
   float lng;
   float width;
   float height;
+  enum AnomalyType type;
 } Anomaly;
-const Anomaly anomalies[12];
+
+// struct Anomaly anomalies[12];
+Anomaly* anomalies;
 
 void populateAnomalies(){
-  
+  anomalies = (Anomaly*) malloc(sizeof(Anomaly) * NumOfAnomalies);
+  anomalies[1] =  { 37.7749, -122.4194, 0.0001, 0.0001, POTHOLE };
 }
 
 void setup(){
     Serial.begin(115200);
     pinMode(1, OUTPUT);
+    populateAnomalies();
     
 }
 

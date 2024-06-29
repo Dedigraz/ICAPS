@@ -1,0 +1,12 @@
+{
+    "recommendations": [
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools-extension-pack",
+        "ms-vscode.hexeditor",
+        "davidanson.vscode-markdownlint",
+        "ms-vscode.vscode-serial-monitor",
+        "bradlc.vscode-tailwindcss",
+        "vsciot-vscode.vscode-arduino",
+        "ms-dotnettools.csharp"
+    ]
+}
