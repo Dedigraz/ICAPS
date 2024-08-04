@@ -1,9 +1,9 @@
 {
-  "additionalFiles": "..\\..\\..,..\\..\\..",
+  "additionalFiles": "..\\..\\..,..\\..\\..,..\\..\\..,..\\..",
   "builtInToolsFolders": "",
-  "compiler.optimization_flags": "",
+  "compiler.optimization_flags": "-Os",
   "customBuildProperties": "",
-  "fqbn": "arduino:avr:uno",
+  "fqbn": "esp32:esp32:esp32:JTAGAdapter=default,PSRAM=disabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=115200,LoopCore=1,EventsCore=1,DebugLevel=none,EraseFlash=none,ZigbeeMode=default",
   "hardwareFolders": "C:\\Users\\Ebun\\AppData\\Local\\Arduino15\\packages",
   "otherLibrariesFolders": "C:\\Users\\Ebun\\Documents\\Arduino\\libraries",
   "runtime.ide.version": "10607",

@@ -1,8 +1,9 @@
 #line 1 "C:\\Users\\Ebun\\source\\ICAPS\\ControllerInterface\\.vscode\\arduino.json"
 {
-    "board": "arduino:avr:uno",
+    "board": "esp32:esp32:esp32",
     "programmer": "avrisp",
     "sketch": "ControllerInterface.ino",
     "output": "./build",
-    "intelliSenseGen": "enable"
+    "intelliSenseGen": "enable",
+    "configuration": "JTAGAdapter=default,PSRAM=disabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=115200,LoopCore=1,EventsCore=1,DebugLevel=none,EraseFlash=none,ZigbeeMode=default"
 }
