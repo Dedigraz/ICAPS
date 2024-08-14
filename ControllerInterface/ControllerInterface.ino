@@ -1,13 +1,17 @@
 // #include "SoftwareSerial.h"
 
 #include <Ramp.h>
-#ifndef GPSAvailable
+#include "float.h"
+#include "InterpolationLib.h"
 
-#define GPSAvailable 1
+
+#define GPSAvailable 0
+#define GpsPIN 12
+
 #include <TinyGPS.h>
 TinyGPS gps;
 
-#endif
+// #endif
 #define UART1 21
 #define UART2 22 
 
@@ -40,10 +44,13 @@ typedef struct {
   enum AnomalyType type;
 } Anomaly;
 
+
 // struct Anomaly anomalies[12];
 Anomaly* anomalies;
 GpsLocation gpsLocation = {0};
 int cursor=0;
+// float lat;
+// float lng;
 
 void populateAnomalies(){
   anomalies = (Anomaly*) malloc(sizeof(Anomaly) * NumOfAnomalies);
@@ -94,17 +101,50 @@ void updateGpsLocation(bool init = false){
   uint32_t traversalTime = 0;
   
   if(init== false){
-    traversalTime  = 1000.* (float)abs(waypoints[cursor-1].lng.getValue() - waypoints[cursor].lng.getValue());
+    // traversalTime  = 1000.* (float)abs(waypoints[cursor-1].lng.getValue() - waypoints[cursor].lng.getValue());
+    traversalTime = 1;
   }
 
-  Serial.println("Moving would take" );
-  Serial.println(traversalTime);
-  gpsLocation.lat.go( waypoints[cursor].lat.getValue(),traversalTime, CUBIC_IN);
-  gpsLocation.lng.go( waypoints[cursor].lng.getValue(),traversalTime, CUBIC_IN);
+  Serial.print("Moving would take" );
+  Serial.print(traversalTime);
+  Serial.println();
+
+  gpsLocation.lat.go( waypoints[cursor].lat.update(),traversalTime *1000, LINEAR, ONCEFORWARD);
+  gpsLocation.lng.go( waypoints[cursor].lng.update(),traversalTime*1000, LINEAR, ONCEFORWARD);
   cursor+=1;
 }
 
-
+void serial_printi(const char *format, ...){
+	
+	char ch;
+	bool flgInterpolate = false;
+	va_list args;
+	va_start( args, format );
+	for( ; *format ; ++format ){
+		ch = *format;
+		if(flgInterpolate){
+			flgInterpolate = false;
+			if((ch=='d') || (ch=='c')){
+				Serial.print(va_arg(args, int));
+			}else if(ch=='s'){
+				Serial.print(va_arg(args, char*));
+			}else if(ch=='o'){
+				Serial.print(va_arg(args, unsigned int));
+			}else if((ch=='f') || (ch=='e') || (ch=='a') || (ch=='g')){
+				Serial.print(va_arg(args, double),5);
+			}else{
+				Serial.print('%');
+				Serial.print(ch);
+			}
+		}else if(ch=='%'){
+			flgInterpolate = true;
+		}else{
+			Serial.print(ch);
+		}
+	}
+	
+	va_end( args );
+}
 
 void setup(){
   //     Serial.begin(0);  // it will try to detect the baud rate for 20 seconds
@@ -123,27 +163,25 @@ void setup(){
     pinMode(UART1, OUTPUT);
     pinMode(UART2, OUTPUT);
     
-    #ifdef GPSAvailable
-      // initialize GPS
-      // pinMode(GpsPIN, INPUT);
-    #endif
+    if( GPSAvailable)// initialize GPS
+      pinMode(GpsPIN, INPUT);
+
     updateGpsLocation(true);
 }
 
 void loop(){
   if (gpsLocation.lng.isFinished()) {
+    Serial.println("Updating gps values");
     updateGpsLocation();
   }
   float lat = gpsLocation.lat.update();
-
-  digitalWrite(1, HIGH);
-  delay(500);
-  digitalWrite(1,LOW);
-
-
+  float lng=  gpsLocation.lng.update();
   
-  Serial.println("Writing");
-  Serial.write("Hello");
+  serial_printi("Lat: %f, Lng: %f ", lat, lng);
+  Serial.println();
+
+  // -------------- Websocket implementation from https://wokwi.com/projects/384795514755693569
+
   Serial.readString();
   
-}                                                                                                                                                                                                                                                                                                                                                
+}      
