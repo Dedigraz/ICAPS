@@ -26,13 +26,13 @@ export default function RootLayout({
 							<h1 className="ml-2 text-lg font-bold">ICAPS Car Tracker</h1>
 						</div>
 						<div className="flex items-center">
-							<a href="#" className="text-sm text-gray-600">
+							<a href="/" className="text-sm text-gray-600">
 								Home
 							</a>
-							<a href="#" className="ml-4 text-sm text-gray-600">
+							<a href="/About" className="ml-4 text-sm text-gray-600">
 								About
 							</a>
-							<a href="#" className="ml-4 text-sm text-gray-600">
+							<a href="/Contact" className="ml-4 text-sm text-gray-600">
 								Contact
 							</a>
 						</div>

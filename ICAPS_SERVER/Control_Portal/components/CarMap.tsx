@@ -21,6 +21,7 @@ function CarMap() {
 		iconAnchor: [22, 94],
 		popupAnchor: [-3, -76],
 	};
+	const carLocation:LatLngTuple = [9.53742, 6.45959]
 	const mineIconOptions: IconOptions = {
 		iconUrl: "mine-marker.png",
 		iconSize: [64.5, 38.7], //645, 387
@@ -56,8 +57,8 @@ function CarMap() {
 	return (
 		<MapContainer
 			className="map"
-			center={[9.53405, 6.45567]}
-			zoom={17}
+			center={carLocation}
+			zoom={18}
 			scrollWheelZoom={false}
 			zoomAnimation={true}
 		>
@@ -72,18 +73,19 @@ function CarMap() {
     			</Marker> */}
 			{/* <Polyline positions={[]}/> */}
 			<LayersControl>
-				<LayersControl.Overlay checked name="Car Layer">
-					<Marker position={[9.53682, 6.45959]} icon={carIcon}>
-						<Popup>Car Marker</Popup>
-					</Marker>
-				</LayersControl.Overlay>
 				<LayersControl.Overlay checked name="Anomalies">
 					{anomalies.map((anomaly, i) => (
-						<Marker position={[anomaly[0] -0.0007, anomaly[1]]} key={i} icon={mineIcon} zIndexOffset={0}>
-							<Popup>Car Marker</Popup>
+						<Marker position={[anomaly[0] -0.0004, anomaly[1]]} key={i} icon={mineIcon} zIndexOffset={0}>
+							<Popup>Anomaly</Popup>
 						</Marker>
 					))}
 				</LayersControl.Overlay>
+				<LayersControl.Overlay checked name="Car Layer">
+					<Marker position={carLocation} icon={carIcon} zIndexOffset={1000}>
+						<Popup>Car Marker</Popup>
+					</Marker>
+				</LayersControl.Overlay>		
+				
 			</LayersControl>
 		</MapContainer>
 	);
