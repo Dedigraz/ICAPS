@@ -131,7 +131,7 @@ void serial_printi(const char *format, ...){
 			}else if(ch=='o'){
 				Serial.print(va_arg(args, unsigned int));
 			}else if((ch=='f') || (ch=='e') || (ch=='a') || (ch=='g')){
-				Serial.print(va_arg(args, double),5);
+				Serial.print(va_arg(args, double),5); // Print out decimals to 5 s.f.
 			}else{
 				Serial.print('%');
 				Serial.print(ch);
