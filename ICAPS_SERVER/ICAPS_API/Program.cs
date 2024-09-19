@@ -21,25 +21,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
 
 app.MapPost("/start", () =>
 {
@@ -98,14 +79,65 @@ app.MapPost("/ws", async (HttpContext context, ILogger<Program> logger) =>
 .Produces(200)
 .WithOpenApi();
 
+app.MapPost("/ws/command", async (HttpContext context, ILogger<Program> logger) =>
+{
+    if (context.WebSockets.IsWebSocketRequest)
+    {
+        using var ws = await context.WebSockets.AcceptWebSocketAsync();
+        logger.LogInformation("Command WebSocket connection established");
+        byte[] buffer = new byte[1024 * 4];
+        while (ws.State == WebSocketState.Open)
+        {
+            var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            if (result.MessageType == WebSocketMessageType.Text)
+            {
+                string command = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                // Process command (start, stop, route update)
+                logger.LogInformation($"Received command: {command}");
+                // Send command to ControllerInterface (implement this)
+            }
+        }
+    }
+    else
+    {
+        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+    }
+}).WithName("WebSocket command")
+.Produces(400)
+.Produces(200)
+.WithOpenApi();
+
+app.MapPost("/ws/update", async (HttpContext context, ILogger<Program> logger) =>
+{
+    if (context.WebSockets.IsWebSocketRequest)
+    {
+        using var ws = await context.WebSockets.AcceptWebSocketAsync();
+        logger.LogInformation("Update WebSocket connection established");
+        byte[] buffer = new byte[1024 * 4];
+        while (ws.State == WebSocketState.Open)
+        {
+            var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            if (result.MessageType == WebSocketMessageType.Text)
+            {
+                string update = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                // Process update (position, maneuver)
+                logger.LogInformation($"Received update: {update}");
+                // Update cached data and notify clients (implement this)
+            }
+        }
+    }
+    else
+    {
+        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+    }
+}).WithName("WebSocket update")
+.Produces(400)
+.Produces(200)
+.WithOpenApi();
 
 app.UseWebSockets();
 await app.RunAsync();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
 
 record Anomaly(float lat, float lng, float offset, float width, float height, AnomalyType AnomalyType)
 {

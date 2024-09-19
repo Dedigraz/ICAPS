@@ -3,6 +3,13 @@
 #include <Ramp.h>
 #include "float.h"
 #include "InterpolationLib.h"
+#include "math.h"
+
+
+#include <WiFi.h>
+#include <WebSocketsClient.h>
+#include <ArduinoJson.h>
+#include <ESP32Servo.h>
 
 
 #define GPSAvailable 0
@@ -19,6 +26,29 @@ TinyGPS gps;
 
 #define ft 0.293
 
+// DC Motor Driver Pins
+#define LEFT_MOTOR_ENABLE 5
+#define LEFT_MOTOR_IN1 6
+#define LEFT_MOTOR_IN2 7
+#define RIGHT_MOTOR_ENABLE 10
+#define RIGHT_MOTOR_IN1 8
+#define RIGHT_MOTOR_IN2 9
+
+// Servo Motor Pin
+#define STEERING_SERVO_PIN 3
+
+Servo steeringServo;
+
+// Motor speed constants
+#define MAX_SPEED 255
+#define NORMAL_SPEED 200
+#define SLOW_SPEED 100
+#define STOP_SPEED 0
+
+// Steering angle constants
+#define CENTER_ANGLE 90
+#define MAX_LEFT_ANGLE 45
+#define MAX_RIGHT_ANGLE 135
 // #define traversalTime 500 //in ms
 float roadWidth;
 
@@ -51,6 +81,77 @@ GpsLocation gpsLocation = {0};
 int cursor=0;
 // float lat;
 // float lng;
+
+const char* ssid = "YourWiFiSSID";
+const char* password = "YourWiFiPassword";
+const char* wsHost = "your-api-host.com";
+const int wsPort = 80;
+const char* wsCommandPath = "/ws/command";
+const char* wsUpdatePath = "/ws/update";
+
+WebSocketsClient webSocketCommand;
+WebSocketsClient webSocketUpdate;
+
+void setupWiFi() {
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+  Serial.println("Connected to WiFi");
+}
+
+void webSocketCommandEvent(WStype_t type, uint8_t * payload, size_t length) {
+  switch(type) {
+    case WStype_DISCONNECTED:
+      Serial.println("Command WebSocket disconnected");
+      break;
+    case WStype_CONNECTED:
+      Serial.println("Command WebSocket connected");
+      break;
+    case WStype_TEXT:
+      handleCommand((char*)payload);
+      break;
+  }
+}
+
+void webSocketUpdateEvent(WStype_t type, uint8_t * payload, size_t length) {
+  switch(type) {
+    case WStype_DISCONNECTED:
+      Serial.println("Update WebSocket disconnected");
+      break;
+    case WStype_CONNECTED:
+      Serial.println("Update WebSocket connected");
+      break;
+  }
+}
+
+void handleCommand(char* payload) {
+  DynamicJsonDocument doc(1024);
+  deserializeJson(doc, payload);
+  
+  String command = doc["command"];
+  if (command == "start") {
+    // Implement start logic
+  } else if (command == "stop") {
+    // Implement stop logic
+  } else if (command == "route") {
+    // Update route information
+    JsonArray route = doc["route"];
+    // Process and store route information
+  }
+}
+
+void sendUpdate() {
+  DynamicJsonDocument doc(1024);
+  doc["lat"] = gpsLocation.lat.update();
+  doc["lng"] = gpsLocation.lng.update();
+  doc["maneuver"] = "current_maneuver"; // Replace with actual maneuver
+
+  String updateString;
+  serializeJson(doc, updateString);
+  webSocketUpdate.sendTXT(updateString);
+}
 
 void populateAnomalies(){
   anomalies = (Anomaly*) malloc(sizeof(Anomaly) * NumOfAnomalies);
@@ -114,74 +215,247 @@ void updateGpsLocation(bool init = false){
   cursor+=1;
 }
 
-void serial_printi(const char *format, ...){
-	
-	char ch;
-	bool flgInterpolate = false;
-	va_list args;
-	va_start( args, format );
-	for( ; *format ; ++format ){
-		ch = *format;
-		if(flgInterpolate){
-			flgInterpolate = false;
-			if((ch=='d') || (ch=='c')){
-				Serial.print(va_arg(args, int));
-			}else if(ch=='s'){
-				Serial.print(va_arg(args, char*));
-			}else if(ch=='o'){
-				Serial.print(va_arg(args, unsigned int));
-			}else if((ch=='f') || (ch=='e') || (ch=='a') || (ch=='g')){
-				Serial.print(va_arg(args, double),5); // Print out decimals to 5 s.f.
-			}else{
-				Serial.print('%');
-				Serial.print(ch);
-			}
-		}else if(ch=='%'){
-			flgInterpolate = true;
-		}else{
-			Serial.print(ch);
-		}
-	}
-	
-	va_end( args );
+void serial_printi(const char *format, ...) {
+    char ch;
+    bool flgInterpolate = false;
+    va_list args;
+    va_start(args, format);
+    for (; *format; ++format) {
+        ch = *format;
+        if (flgInterpolate) {
+            flgInterpolate = false;
+            switch (ch) {
+                case 'd':
+                case 'i':
+                    Serial.print(va_arg(args, int));
+                    break;
+                case 'u':
+                    Serial.print(va_arg(args, unsigned int));
+                    break;
+                case 'c':
+                    Serial.print((char)va_arg(args, int));
+                    break;
+                case 's':
+                    Serial.print(va_arg(args, char*));
+                    break;
+                case 'x':
+                case 'X':
+                    Serial.print(va_arg(args, unsigned int), HEX);
+                    break;
+                case 'b':
+                    Serial.print(va_arg(args, unsigned int), BIN);
+                    break;
+                case 'o':
+                    Serial.print(va_arg(args, unsigned int), OCT);
+                    break;
+                case 'f':
+                case 'F':
+                case 'e':
+                case 'E':
+                case 'g':
+                case 'G':
+                    Serial.print(va_arg(args, double), 5);  // Print out decimals to 5 s.f.
+                    break;
+                case 'p':
+                    Serial.print((uintptr_t)va_arg(args, void*), HEX);
+                    break;
+                case '%':
+                    Serial.print('%');
+                    break;
+                default:
+                    Serial.print('%');
+                    Serial.print(ch);
+                    break;
+            }
+        } else if (ch == '%') {
+            flgInterpolate = true;
+        } else if (ch == '\\' && *(format + 1) == 'n') {
+            Serial.println();
+            ++format;  // Skip the 'n'
+        } else {
+            Serial.print(ch);
+        }
+    }
+    va_end(args);
 }
 
-void setup(){
-  //     Serial.begin(0);  // it will try to detect the baud rate for 20 seconds
-
-  // Serial.print("\n==>The baud rate is ");
-  //   if (Serial.baudRate() == 0) {
-  // Serial.end();
-  // Serial.println(Serial.baudRate());
-    Serial.begin(9600);
-  // Serial.println(Serial.baudRate());
-  //   }
-    populateAnomalies();
-
-    pinMode(1, OUTPUT);
-
-    pinMode(UART1, OUTPUT);
-    pinMode(UART2, OUTPUT);
-    
-    if( GPSAvailable)// initialize GPS
-      pinMode(GpsPIN, INPUT);
-
-    updateGpsLocation(true);
-}
-
-void loop(){
-  if (gpsLocation.lng.isFinished()) {
-    Serial.println("Updating gps values");
-    updateGpsLocation();
-  }
-  float lat = gpsLocation.lat.update();
-  float lng=  gpsLocation.lng.update();
+void setupMotors() {
+  pinMode(LEFT_MOTOR_ENABLE, OUTPUT);
+  pinMode(LEFT_MOTOR_IN1, OUTPUT);
+  pinMode(LEFT_MOTOR_IN2, OUTPUT);
+  pinMode(RIGHT_MOTOR_ENABLE, OUTPUT);
+  pinMode(RIGHT_MOTOR_IN1, OUTPUT);
+  pinMode(RIGHT_MOTOR_IN2, OUTPUT);
   
-  serial_printi("Lat: %f, Lng: %f ", lat, lng);
+  steeringServo.attach(STEERING_SERVO_PIN);
+  steeringServo.write(CENTER_ANGLE);
+}
+
+void setLeftMotorSpeed(int speed) {
+  analogWrite(LEFT_MOTOR_ENABLE, abs(speed));
+  digitalWrite(LEFT_MOTOR_IN1, speed > 0 ? HIGH : LOW);
+  digitalWrite(LEFT_MOTOR_IN2, speed > 0 ? LOW : HIGH);
+}
+
+void setRightMotorSpeed(int speed) {
+  analogWrite(RIGHT_MOTOR_ENABLE, abs(speed));
+  digitalWrite(RIGHT_MOTOR_IN1, speed > 0 ? HIGH : LOW);
+  digitalWrite(RIGHT_MOTOR_IN2, speed > 0 ? LOW : HIGH);
+}
+
+void setSteering(int angle) {
+  steeringServo.write(constrain(angle, MAX_LEFT_ANGLE, MAX_RIGHT_ANGLE));
+}
+
+void moveForward(int speed) {
+  setLeftMotorSpeed(speed);
+  setRightMotorSpeed(speed);
+}
+
+void moveBackward(int speed) {
+  setLeftMotorSpeed(-speed);
+  setRightMotorSpeed(-speed);
+}
+
+void turnLeft(int speed, int angle) {
+  setLeftMotorSpeed(speed / 2);
+  setRightMotorSpeed(speed);
+  setSteering(CENTER_ANGLE - angle);
+}
+
+void turnRight(int speed, int angle) {
+  setLeftMotorSpeed(speed);
+  setRightMotorSpeed(speed / 2);
+  setSteering(CENTER_ANGLE + angle);
+}
+
+void stop() {
+  setLeftMotorSpeed(STOP_SPEED);
+  setRightMotorSpeed(STOP_SPEED);
+  setSteering(CENTER_ANGLE);
+}
+
+void executeManeuver(Anomaly* detectedAnomaly) {
+  float anomalyWidth = detectedAnomaly->width;
+  float anomalyHeight = detectedAnomaly->height;
+  float anomalyOffset = detectedAnomaly->offset;
+  
+  // Fuzzy logic to determine maneuver
+  if (detectedAnomaly->type == POTHOLE) {
+    if (anomalyWidth < 0.5 * roadWidth && abs(anomalyOffset) < 0.25 * roadWidth) {
+      // Small pothole, try to straddle it
+      moveForward(NORMAL_SPEED);
+    } else if (anomalyOffset > 0) {
+      // Pothole on the right, move left
+      turnLeft(SLOW_SPEED, 15);
+    } else {
+      // Pothole on the left or center, move right
+      turnRight(SLOW_SPEED, 15);
+    }
+  } else if (detectedAnomaly->type == SPEEDBUMP) {
+    // Slow down for speed bumps
+    moveForward(SLOW_SPEED);
+  } else if (detectedAnomaly->type == COLLISION || detectedAnomaly->type == ACCIDENT_SCENE) {
+    // Stop for collisions or accident scenes
+    stop();
+  } else if (detectedAnomaly->type == CRACK) {
+    if (anomalyWidth < 0.25 * roadWidth) {
+      // Small crack, proceed with caution
+      moveForward(NORMAL_SPEED);
+    } else {
+      // Larger crack, slow down
+      moveForward(SLOW_SPEED);
+    }
+  } else if (detectedAnomaly->type == MANHOLE) {
+    if (abs(anomalyOffset) < 0.2 * roadWidth) {
+      // Manhole in the center, straddle it
+      moveForward(NORMAL_SPEED);
+    } else if (anomalyOffset > 0) {
+      // Manhole on the right, move slightly left
+      turnLeft(NORMAL_SPEED, 10);
+    } else {
+      // Manhole on the left, move slightly right
+      turnRight(NORMAL_SPEED, 10);
+    }
+  }
+  
+  // Execute the maneuver for a short duration
+  delay(1000);
+  
+  // Return to normal driving
+  moveForward(NORMAL_SPEED);
+  setSteering(CENTER_ANGLE);
+}
+
+void setup() {
+  Serial.begin(9600);
+  setupWiFi();
+  setupMotors();
+  
+  webSocketCommand.begin(wsHost, wsPort, wsCommandPath);
+  webSocketCommand.onEvent(webSocketCommandEvent);
+  
+  webSocketUpdate.begin(wsHost, wsPort, wsUpdatePath);
+  webSocketUpdate.onEvent(webSocketUpdateEvent);
+  
+  populateAnomalies();
+
+  pinMode(1, OUTPUT);
+  pinMode(UART1, OUTPUT);
+  pinMode(UART2, OUTPUT);
+  
+  if (GPSAvailable)
+    pinMode(GpsPIN, INPUT);
+
+  updateGpsLocation(true);
+}
+
+void loop() {
+  webSocketCommand.loop();
+  webSocketUpdate.loop();
+
+  if (gpsLocation.lng.isFinished()) {
+    updateGpsLocation();
+    sendUpdate();
+  }
+
+  float currentLat = gpsLocation.lat.update();
+  float currentLng = gpsLocation.lng.update();
+
+  // Check for nearby anomalies
+  for (int i = 0; i < NumOfAnomalies; i++) {
+    float distance = calculateDistance(currentLat, currentLng, anomalies[i].lat, anomalies[i].lng);
+    if (distance < 10) { // If within 10 meters of an anomaly
+      executeManeuver(&anomalies[i]);
+      break;
+    }
+  }
+
+  // Normal driving when no anomalies are detected
+  moveForward(NORMAL_SPEED);
+
+  serial_printi("Lat: %f, Lng: %f ", currentLat, currentLng);
   Serial.println();
 
-  // -------------- Websocket implementation from https://wokwi.com/projects/384795514755693569
+  delay(100); // Short delay to prevent overwhelming the system
+}
 
-  Serial.readString();
-  
-}      
+float calculateDistance(float lat1, float lon1, float lat2, float lon2) {
+  // Haversine formula to calculate distance between two GPS coordinates
+   float dLat = (lat2 - lat1) *
+                      M_PI / 180.0;
+        float dLon = (lon2 - lon1) * 
+                      M_PI / 180.0;
+ 
+        // convert to radians
+        lat1 = (lat1) * M_PI / 180.0;
+        lat2 = (lat2) * M_PI / 180.0;
+ 
+        // apply formulae
+        float a = pow(sin(dLat / 2), 2) + 
+                   pow(sin(dLon / 2), 2) * 
+                   cos(lat1) * cos(lat2);
+        float rad = 6371;
+        float c = 2 * asin(sqrt(a));
+        return rad * c;
+}
