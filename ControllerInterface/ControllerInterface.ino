@@ -1,5 +1,7 @@
 // #include "SoftwareSerial.h"
-
+/*****************************
+DO NOT USE GPIO PINS 9,10,11, 6, 7, 8
+*****************************/
 #include <Ramp.h>
 #include "float.h"
 #include "InterpolationLib.h"
@@ -27,15 +29,15 @@ TinyGPS gps;
 #define ft 0.293
 
 // DC Motor Driver Pins
-#define LEFT_MOTOR_ENABLE 5
-#define LEFT_MOTOR_IN1 6
-#define LEFT_MOTOR_IN2 7
-#define RIGHT_MOTOR_ENABLE 10
-#define RIGHT_MOTOR_IN1 8
-#define RIGHT_MOTOR_IN2 9
+#define LEFT_MOTOR_ENABLE 12
+#define LEFT_MOTOR_IN1 13
+#define LEFT_MOTOR_IN2 14
+#define RIGHT_MOTOR_ENABLE 15
+#define RIGHT_MOTOR_IN1 16
+#define RIGHT_MOTOR_IN2 17
 
 // Servo Motor Pin
-#define STEERING_SERVO_PIN 3
+#define STEERING_SERVO_PIN 18
 
 Servo steeringServo;
 
@@ -82,8 +84,8 @@ int cursor=0;
 // float lat;
 // float lng;
 
-const char* ssid = "YourWiFiSSID";
-const char* password = "YourWiFiPassword";
+const char* ssid = "CarWifi";
+const char* password = "ICAPSWifi";
 const char* wsHost = "your-api-host.com";
 const int wsPort = 80;
 const char* wsCommandPath = "/ws/command";
@@ -91,6 +93,69 @@ const char* wsUpdatePath = "/ws/update";
 
 WebSocketsClient webSocketCommand;
 WebSocketsClient webSocketUpdate;
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Check 0");
+  setupWiFi();
+  setupMotors();
+  Serial.println("Check 1");
+  webSocketCommand.begin(wsHost, wsPort, wsCommandPath);
+  webSocketCommand.onEvent(webSocketCommandEvent);
+  Serial.println("Check 2");
+  
+  webSocketUpdate.begin(wsHost, wsPort, wsUpdatePath);
+  webSocketUpdate.onEvent(webSocketUpdateEvent);
+  Serial.println("Check 3");
+  
+  populateAnomalies();
+
+  Serial.println("Check 4");
+  pinMode(1, OUTPUT);
+  pinMode(UART1, OUTPUT);
+  pinMode(UART2, OUTPUT);
+  Serial.println("Check 5");
+  
+  if (GPSAvailable)
+    pinMode(GpsPIN, INPUT);
+
+  updateGpsLocation(true);
+}
+
+void loop() {
+  Serial.println("Check 6");
+  webSocketCommand.loop();
+  webSocketUpdate.loop();
+
+  Serial.println("Check 7");
+  if (gpsLocation.lng.isFinished()) {
+    updateGpsLocation();
+    sendUpdate();
+  }
+
+  Serial.println("Check 8");
+  float currentLat = gpsLocation.lat.update();
+  float currentLng = gpsLocation.lng.update();
+
+  // Check for nearby anomalies
+  Serial.println("Check 9");
+  for (int i = 0; i < NumOfAnomalies; i++) {
+    float distance = calculateDistance(currentLat, currentLng, anomalies[i].lat, anomalies[i].lng);
+    if (distance < 10) { // If within 10 meters of an anomaly
+      executeManeuver(&anomalies[i]);
+      break;
+    }
+  }
+
+  Serial.println("Check 10");
+  // Normal driving when no anomalies are detected
+  moveForward(NORMAL_SPEED);
+
+  serial_printi("Lat: %f, Lng: %f ", currentLat, currentLng);
+  Serial.println();
+
+  delay(100); // Short delay to prevent overwhelming the system
+}
 
 void setupWiFi() {
   WiFi.begin(ssid, password);
@@ -387,58 +452,6 @@ void executeManeuver(Anomaly* detectedAnomaly) {
   setSteering(CENTER_ANGLE);
 }
 
-void setup() {
-  Serial.begin(9600);
-  setupWiFi();
-  setupMotors();
-  
-  webSocketCommand.begin(wsHost, wsPort, wsCommandPath);
-  webSocketCommand.onEvent(webSocketCommandEvent);
-  
-  webSocketUpdate.begin(wsHost, wsPort, wsUpdatePath);
-  webSocketUpdate.onEvent(webSocketUpdateEvent);
-  
-  populateAnomalies();
-
-  pinMode(1, OUTPUT);
-  pinMode(UART1, OUTPUT);
-  pinMode(UART2, OUTPUT);
-  
-  if (GPSAvailable)
-    pinMode(GpsPIN, INPUT);
-
-  updateGpsLocation(true);
-}
-
-void loop() {
-  webSocketCommand.loop();
-  webSocketUpdate.loop();
-
-  if (gpsLocation.lng.isFinished()) {
-    updateGpsLocation();
-    sendUpdate();
-  }
-
-  float currentLat = gpsLocation.lat.update();
-  float currentLng = gpsLocation.lng.update();
-
-  // Check for nearby anomalies
-  for (int i = 0; i < NumOfAnomalies; i++) {
-    float distance = calculateDistance(currentLat, currentLng, anomalies[i].lat, anomalies[i].lng);
-    if (distance < 10) { // If within 10 meters of an anomaly
-      executeManeuver(&anomalies[i]);
-      break;
-    }
-  }
-
-  // Normal driving when no anomalies are detected
-  moveForward(NORMAL_SPEED);
-
-  serial_printi("Lat: %f, Lng: %f ", currentLat, currentLng);
-  Serial.println();
-
-  delay(100); // Short delay to prevent overwhelming the system
-}
 
 float calculateDistance(float lat1, float lon1, float lat2, float lon2) {
   // Haversine formula to calculate distance between two GPS coordinates

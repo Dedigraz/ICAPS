@@ -2,9 +2,40 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 using Microsoft.AspNetCore.Http.HttpResults;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+float[] currentLocation = new float[2] { 9.53742f, 6.45959f }; // Default location
+
+builder.Configuration.AddEnvironmentVariables();
+var tomtomClient = new HttpClient
+{
+    BaseAddress = new Uri("""https://api.tomtom.com/routing/1/""")
+};
+var apiKey = builder.Configuration["TomTomApiKey"];
+
+if (string.IsNullOrEmpty(apiKey))
+{
+    throw new InvalidOperationException("TomTom Api key missing, add the api key to environment variables, user secrets or in the appsettings.json to get the app running");
+}
+
 builder.Logging.AddConsole();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+                      policy =>
+                      {
+                          policy.WithOrigins("*");
+                      });
+});
+builder.Services.ConfigureHttpJsonOptions(e =>
+{
+    var enumConverter = new JsonStringEnumConverter<AnomalyType>();
+    e.SerializerOptions.Converters.Add(enumConverter);
+});
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -20,13 +51,16 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseRouting();
+app.UseCors();
+app.UseWebSockets();
 
 app.MapPost("/start", () =>
 {
     return "START";
 })
 .WithName("Start")
+.WithDescription("Start Operations ")
 .WithOpenApi();
 
 app.MapPost("/stop", () =>
@@ -34,6 +68,48 @@ app.MapPost("/stop", () =>
     return "STOP";
 })
 .WithName("Stop")
+.WithOpenApi();
+
+app.MapGet("/status", () =>
+{
+    // Implement logic to get current car status
+    return Results.Ok(new { status = "Running", routeCompletion = 42, roadHealth = "Anomaly", speed = 13, connectionStatus = "Connected" });
+})
+.WithName("GetStatus")
+.WithOpenApi();
+
+app.MapGet("/location", () =>
+{
+    return Results.Ok(currentLocation);
+})
+.WithName("GetLocation")
+.WithOpenApi();
+
+app.MapGet("/anomalies", () =>
+{
+    // Implement logic to get list of anomalies
+    return Results.Ok(Anomaly.GetTestAnomalies());
+})
+.WithName("GetAnomalies")
+.WithOpenApi();
+
+app.MapGet("/route", () =>
+{
+    // Implement logic to get current route
+    return Results.Ok(new[] { new[] { 9.537185, 6.467586 }, new[] { 9.537005, 6.464765 }, /* ... */ });
+})
+.WithName("GetTestRoute")
+.WithOpenApi();
+
+app.MapGet("/routes", async ([FromQuery] float startlat, [FromQuery] float startlng, [FromQuery] float endlat, [FromQuery] float endlng) =>
+{
+    // Implement logic to get current route
+    var routePlanningLocations = $"{startlat},{startlng}:{endlat},{endlng}";
+    var contentType = "json";
+    var results = await tomtomClient.GetAsync($"calculateRoute/{routePlanningLocations}/{contentType}?key={apiKey}&coordinatePrecision=full");
+    return Results.Ok(await results.Content.ReadAsStreamAsync());
+})
+.WithName("GetRoute")
 .WithOpenApi();
 
 List<WebSocket> connections = new();
@@ -120,9 +196,15 @@ app.MapPost("/ws/update", async (HttpContext context, ILogger<Program> logger) =
             if (result.MessageType == WebSocketMessageType.Text)
             {
                 string update = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                // Process update (position, maneuver)
                 logger.LogInformation($"Received update: {update}");
-                // Update cached data and notify clients (implement this)
+
+                // Parse the update and store the new location
+                var updateData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, float>>(update);
+                if (updateData != null && updateData.ContainsKey("lat") && updateData.ContainsKey("lng"))
+                {
+                    currentLocation[0] = updateData["lat"];
+                    currentLocation[1] = updateData["lng"];
+                }
             }
         }
     }
@@ -135,15 +217,15 @@ app.MapPost("/ws/update", async (HttpContext context, ILogger<Program> logger) =
 .Produces(200)
 .WithOpenApi();
 
-app.UseWebSockets();
 await app.RunAsync();
 
 
 record Anomaly(float lat, float lng, float offset, float width, float height, AnomalyType AnomalyType)
 {
-    public Anomaly[] GetTestAnomalies(){
+    public static Anomaly[] GetTestAnomalies()
+    {
         float ft = 0.243f;
-        var roadWidth = 5*ft;
+        var roadWidth = 5 * ft;
         Anomaly[] anomalies =
         [
             new( 9.53709f, 6.46616f, 0, 0.5f * roadWidth, 2.5f * ft, AnomalyType.CRACK ),
@@ -169,7 +251,6 @@ record Anomaly(float lat, float lng, float offset, float width, float height, An
             new( 9.53695f, 6.46519f, 0, roadWidth, 3*ft, AnomalyType.SPEEDBUMP ),
             new( 9.53703f, 6.46720f, 0,roadWidth ,7.3f*ft, AnomalyType.SPEEDBUMP ),
         ];
-        
         return anomalies;
     }
 }
@@ -182,5 +263,7 @@ enum AnomalyType
     ACCIDENT_SCENE,
     CRACK,
     MANHOLE,
-    FIRE_OR_COMBUSTION_ZONE
+    FIRE_OR_COMBUSTION_ZONE,
+    VIBRATIONS
 }
+

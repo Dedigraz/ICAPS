@@ -5,7 +5,7 @@ import "@radix-ui/themes/styles.css";
 
 import { Theme, ThemePanel } from "@radix-ui/themes";
 
-const inter = Inter({ subsets: ["latin"] });
+// const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={inter.className}>
+			<body >
 				<Theme className="h-screen flex flex-col grow">
 					<nav className="w-screen max-w-screen h-10 px-24 flex itens-center justify-between border-b-2">
 						<div className="flex items-center">
