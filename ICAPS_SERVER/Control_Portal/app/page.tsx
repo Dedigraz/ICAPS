@@ -6,10 +6,9 @@ import type { LatLngTuple } from "leaflet";
 import type { Anomaly } from "@/utils/types";
 const CarMap = dynamic(() => import("@/components/CarMap"), { ssr: false });
 
-const API_URL =
-	process.env.NODE_ENV === "production"
-		? process.env.NEXT_PUBLIC_PROD_API_URL
-		: process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NODE_ENV === 'production'
+  ? process.env.NEXT_PUBLIC_PROD_API_URL
+  : process.env.NEXT_PUBLIC_API_URL;
 export default function Home() {
 	const [carStatus, setCarStatus] = useState({
 		status: "Stopped",
@@ -25,6 +24,7 @@ export default function Home() {
 	const [route, setRoute] = useState<LatLngTuple[]>([]);
 	const [isStarted, setIsStarted] = useState<boolean>(false);
 	useEffect(() => {
+		
 		fetchData();
 		const interval = setInterval(fetchData, 20_000);
 		return () => clearInterval(interval);
@@ -34,10 +34,10 @@ export default function Home() {
 		try {
 			const [statusResponse, locationResponse, anomaliesResponse] =
 				await Promise.all([
-					axios.get(`${API_URL}/status`),
-					axios.get(`${API_URL}/location`),
+				axios.get(`${API_URL}/status`),
+				axios.get(`${API_URL}/location`),
 					axios.get(`${API_URL}/anomalies`),
-				]);
+			]);
 
 			setCarStatus(statusResponse.data);
 			setCarLocation(locationResponse.data);
@@ -46,6 +46,7 @@ export default function Home() {
 			console.error("Error fetching data:", error);
 		}
 	};
+	
 	const handleStartStop = async () => {
 		try {
 			const action = isStarted ? "stop" : "start";
