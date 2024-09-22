@@ -22,4 +22,5 @@ export interface CarMapProps {
 	carLocation: LatLngTuple;
 	anomalies: Anomaly[];
 	route: LatLngTuple[];
+	routeHandler: (startPos: LatLngTuple, endPos:LatLngTuple) => void;
 }

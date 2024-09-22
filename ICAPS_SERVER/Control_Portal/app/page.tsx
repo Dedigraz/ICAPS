@@ -1,5 +1,7 @@
 "use client";
+
 import { useState, useEffect } from "react";
+import io from "socket.io-client";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import type { LatLngTuple } from "leaflet";
@@ -9,6 +11,11 @@ const CarMap = dynamic(() => import("@/components/CarMap"), { ssr: false });
 const API_URL = process.env.NODE_ENV === 'production'
   ? process.env.NEXT_PUBLIC_PROD_API_URL
   : process.env.NEXT_PUBLIC_API_URL;
+
+const socket = io(API_URL,{
+	transports: ['websocket', 'polling', 'webtransport'],
+
+});
 export default function Home() {
 	const [carStatus, setCarStatus] = useState({
 		status: "Stopped",
@@ -57,10 +64,12 @@ export default function Home() {
 			console.error("Error starting/stopping:", error);
 		}
 	};
-
+	const handleRoute = (startPos: LatLngTuple, endPos: LatLngTuple) => {
+		setRoute([startPos, endPos]);
+	}
 	return (
 		<main className="flex h-auto grow w-screen relative">
-			<CarMap carLocation={carLocation} anomalies={anomalies} route={route} />
+			<CarMap carLocation={carLocation} anomalies={anomalies} route={route} routeHandler={handleRoute}/>
 			<div
 				className="absolute w-1/4 h-1/4 rounded-t-md bottom-0 left-1/2 bg-white border-2 border-black border-b-0"
 				style={{ zIndex: 1000000, transform: "translate(-50%)" }}
