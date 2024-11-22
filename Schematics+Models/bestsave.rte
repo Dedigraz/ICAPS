@@ -1,0 +1,310 @@
+ (routes 
+  (resolution mm 100000)
+  (parser
+  )
+  (parser
+  )
+  (structure_out
+   (layer TOP (type signal)
+   )
+   (layer I1 (type signal)
+   )
+   (layer I2 (type signal)
+   )
+   (layer I3 (type signal)
+   )
+   (layer I4 (type signal)
+   )
+   (layer I5 (type signal)
+   )
+   (layer I6 (type signal)
+   )
+   (layer I7 (type signal)
+   )
+   (layer I8 (type signal)
+   )
+   (layer I9 (type signal)
+   )
+   (layer I10 (type signal)
+   )
+   (layer I11 (type signal)
+   )
+   (layer I12 (type signal)
+   )
+   (layer I13 (type signal)
+   )
+   (layer I14 (type signal)
+   )
+   (layer BOT (type signal)
+   )
+  )
+  (library_out
+  (padstack $VIA#0_SIGNAL
+   (shape (circ TOP 76200 0 0))
+   (shape (circ I1 76200 0 0))
+   (shape (circ I2 76200 0 0))
+   (shape (circ I3 76200 0 0))
+   (shape (circ I4 76200 0 0))
+   (shape (circ I5 76200 0 0))
+   (shape (circ I6 76200 0 0))
+   (shape (circ I7 76200 0 0))
+   (shape (circ I8 76200 0 0))
+   (shape (circ I9 76200 0 0))
+   (shape (circ I10 76200 0 0))
+   (shape (circ I11 76200 0 0))
+   (shape (circ I12 76200 0 0))
+   (shape (circ I13 76200 0 0))
+   (shape (circ I14 76200 0 0))
+   (shape (circ BOT 76200 0 0))
+  )
+  (padstack $VIA#0_POWER
+   (shape (circ TOP 76200 0 0))
+   (shape (circ I1 76200 0 0))
+   (shape (circ I2 76200 0 0))
+   (shape (circ I3 76200 0 0))
+   (shape (circ I4 76200 0 0))
+   (shape (circ I5 76200 0 0))
+   (shape (circ I6 76200 0 0))
+   (shape (circ I7 76200 0 0))
+   (shape (circ I8 76200 0 0))
+   (shape (circ I9 76200 0 0))
+   (shape (circ I10 76200 0 0))
+   (shape (circ I11 76200 0 0))
+   (shape (circ I12 76200 0 0))
+   (shape (circ I13 76200 0 0))
+   (shape (circ I14 76200 0 0))
+   (shape (circ BOT 76200 0 0))
+  )
+  )
+  (network_out
+   (Net #00043 
+   (rule
+   )
+   (wire (path BOT 25400  1008000 -5500000 1008000 -1402141 -1206500 -1402141
+     -1206500 3738209 -950618 3738209)
+    (connect (terminal pin DRIVER3-4) (terminal pin ESP2-25))
+   )
+   )
+   (Net #00044 
+   (rule
+   )
+   (wire (path BOT 25400  1262000 -5500000 1262000 3484209 -950618 3484209)
+    (connect (terminal pin DRIVER3-6) (terminal pin ESP2-24))
+   )
+   )
+   (Net #00045 
+   (rule
+   )
+   (wire (path BOT 25400  1135000 -4992000 1135000 2214209 -950618 2214209)
+    (connect (terminal pin DRIVER3-5) (terminal pin ESP2-19))
+   )
+   )
+   (Net #00046 
+   (rule
+   )
+   )
+   (Net #00047 
+   (rule
+   )
+   )
+   (Net #00048 
+   (rule
+   )
+   (wire (path TOP 25400  1778000 1905000 1778000 1960209 -950618 1960209)
+    (connect (terminal via) (terminal pin ESP2-18))
+   )
+   (wire (path BOT 25400  1770000 -5500000 1770000 -5207000 1778000 -5207000
+     1778000 1905000)
+    (connect (terminal pin DRIVER3-10) (terminal via))
+   )
+   (via $VIA#0_SIGNAL 1778000 1905000)
+   )
+   (Net #00049 
+   (rule
+   )
+   )
+   (Net #00050 
+   (rule
+   )
+   )
+   (Net #00051 
+   (rule
+   )
+   (wire (path BOT 25400  1643000 -4992000 1643000 3611209 -1079500 3611209
+     -1079500 3230209 -950618 3230209)
+    (connect (terminal pin DRIVER3-9) (terminal pin ESP2-23))
+   )
+   )
+   (Net #00052 
+   (rule
+   )
+   (wire (path TOP 25400  1841500 2603500 1841500 2976209 -950618 2976209)
+    (connect (terminal via) (terminal pin ESP2-22))
+   )
+   (wire (path BOT 25400  1897000 -4992000 1897000 2609574 1841500 2609574
+     1841500 2603500)
+    (connect (terminal pin DRIVER3-11) (terminal via))
+   )
+   (via $VIA#0_SIGNAL 1841500 2603500)
+   )
+   (Net #00060 
+   (rule
+   )
+   )
+   (Net #00061 
+   (rule
+   )
+   )
+   (Net #00063 
+   (rule
+   )
+   (wire (path TOP 25400  -5513400 3004000 -5715000 3004000 -5715000 1448000
+     -3500000 1448000)
+    (connect (terminal pin MAGNETIC1-1) (terminal pin ESP2-13))
+   )
+   (wire (path TOP 25400  -3500000 1448000 -3500000 1452209 -950618 1452209)
+    (connect (terminal pin ESP2-13) (terminal pin ESP2-16))
+   )
+   )
+   (Net #00068 
+   (rule
+   )
+   (wire (path TOP 25400  -5513400 2750000 -4445000 2750000 -4445000 3988000
+     -3500000 3988000)
+    (connect (terminal pin MAGNETIC1-2) (terminal pin ESP2-3))
+   )
+   )
+   (Net #00069 
+   (rule
+   )
+   (wire (path TOP 25400  -5513400 2496000 -4294586 2496000 -4294586 3734000
+     -3500000 3734000)
+    (connect (terminal pin MAGNETIC1-3) (terminal pin ESP2-4))
+   )
+   )
+   (Net #00070 
+   (rule
+   )
+   (wire (path TOP 25400  -5513400 2242000 -3925456 2242000 -3925456 3480000
+     -3500000 3480000)
+    (connect (terminal pin MAGNETIC1-4) (terminal pin ESP2-5))
+   )
+   )
+   (Net #00072 
+   (rule
+   )
+   (wire (path BOT 25400  -3242000 -5500000 -3242000 1829000 -3683000 1829000
+     -3683000 1968500 -3810000 1968500 -3810000 2972000 -3500000 2972000)
+    (connect (terminal pin DRIVER4-4) (terminal pin ESP2-7))
+   )
+   )
+   (Net #00073 
+   (rule
+   )
+   (wire (path BOT 25400  -3500000 2718000 -3683000 2718000 -3683000 2083000
+     -3111500 2083000 -3111500 2032000 -2988000 2032000 -2988000 -5500000)
+    (connect (terminal pin ESP2-8) (terminal pin DRIVER4-6))
+   )
+   )
+   (Net #00074 
+   (rule
+   )
+   (wire (path BOT 25400  -3500000 2464000 -2222500 2464000 -2222500 -5143500
+     -2607000 -5143500 -2607000 -4992000)
+    (connect (terminal pin ESP2-9) (terminal pin DRIVER4-9))
+   )
+   )
+   (Net #00075 
+   (rule
+   )
+   (wire (path BOT 25400  -3500000 2210000 -2353000 2210000 -2353000 -4992000)
+    (connect (terminal pin ESP2-10) (terminal pin DRIVER4-11))
+   )
+   )
+   (Net #00076 
+   (rule
+   )
+   (wire (path BOT 25400  -3500000 1956000 -3115000 1956000 -3115000 -4992000)
+    (connect (terminal pin ESP2-11) (terminal pin DRIVER4-5))
+   )
+   )
+   (Net #00077 
+   (rule
+   )
+   (wire (path TOP 25400  -3365500 -825500 -3365500 -832455 -3492500 -832455
+     -3492500 -5270500 -3619500 -5270500 -3619500 -5625730 -2603500 -5625730
+     -2603500 -5500000 -2480000 -5500000)
+    (connect (terminal via) (terminal pin DRIVER4-10))
+   )
+   (wire (path BOT 25400  -3500000 1702000 -3500000 1575000 -3365500 1575000
+     -3365500 -825500)
+    (connect (terminal pin ESP2-12) (terminal via))
+   )
+   (via $VIA#0_SIGNAL -3365500 -825500)
+   )
+   (Net #00079 
+   (rule
+   )
+   )
+   (Net #00080 
+   (rule
+   )
+   )
+   (Net #00081 
+   (rule
+   )
+   )
+   (Net #00082 
+   (rule
+   )
+   )
+   (Net GND 
+   (rule
+   )
+   (wire (path TOP 25400  2278000 -5500000 2278000 -5270500 1389000 -5270500
+     1389000 -4992000)
+    (connect (terminal pin DRIVER3-14) (terminal pin DRIVER3-7))
+   )
+   (wire (path BOT 25400  -3750000 -5500000 -3750000 -5625730 -2861000 -5625730
+     -2861000 -4992000)
+    (connect (terminal pin DRIVER4-0) (terminal pin DRIVER4-7))
+   )
+   (wire (path BOT 25400  500000 -5500000 500000 -5625730 1389000 -5625730
+     1389000 -4992000)
+    (connect (terminal pin DRIVER3-0) (terminal pin DRIVER3-7))
+   )
+   (wire (path TOP 25400  -1972000 -5500000 -1972000 -5270500 -2861000 -5270500
+     -2861000 -4992000)
+    (connect (terminal pin DRIVER4-14) (terminal pin DRIVER4-7))
+   )
+   (wire (path TOP 25400  500000 -5500000 254000 -5500000 254000 -5499999
+     -1064654 -5499999 -1064654 -5500000 -1972000 -5500000)
+    (connect (terminal pin DRIVER3-0) (terminal pin DRIVER4-14))
+   )
+   )
+   (Net VCC/VDD 
+   (rule
+   )
+   (wire (path BOT 25400  -5513400 3258000 -4399706 3258000 -4399706 1194000
+     -3500000 1194000)
+    (connect (terminal pin MAGNETIC1-0) (terminal pin ESP2-14))
+   )
+   (wire (path BOT 25400  881000 -4992000 881000 -5334000 -2734000 -5334000
+     -2734000 -5500000)
+    (connect (terminal pin DRIVER3-3) (terminal pin DRIVER4-8))
+   )
+   (wire (path BOT 25400  -3500000 1194000 -3500000 -4699000 -3369000 -4699000
+     -3369000 -4992000)
+    (connect (terminal pin ESP2-14) (terminal pin DRIVER4-3))
+   )
+   (wire (path TOP 25400  -2734000 -5500000 -2734000 -5334000 -3369000 -5334000
+     -3369000 -4992000)
+    (connect (terminal pin DRIVER4-8) (terminal pin DRIVER4-3))
+   )
+   (wire (path TOP 25400  1516000 -5500000 1516000 -5334000 881000 -5334000
+     881000 -4992000)
+    (connect (terminal pin DRIVER3-8) (terminal pin DRIVER3-3))
+   )
+   )
+  )
+ )
