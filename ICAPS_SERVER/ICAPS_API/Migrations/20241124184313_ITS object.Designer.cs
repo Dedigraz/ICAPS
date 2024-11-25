@@ -2,6 +2,7 @@
 using ICAPS_API.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ICAPS_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241124184313_ITS object")]
+    partial class ITSobject
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -52,49 +55,57 @@ namespace ICAPS_API.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("AnomalyType")
+                        .IsRequired()
                         .HasColumnType("TEXT")
                         .HasAnnotation("Relational:JsonPropertyName", "type");
 
                     b.Property<string>("confidence")
+                        .IsRequired()
                         .HasColumnType("TEXT")
                         .HasAnnotation("Relational:JsonPropertyName", "confidence");
 
                     b.Property<string>("flamestatus")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<float?>("height")
+                    b.Property<float>("height")
                         .HasColumnType("REAL")
                         .HasAnnotation("Relational:JsonPropertyName", "h");
 
                     b.Property<string>("location")
+                        .IsRequired()
                         .HasColumnType("TEXT")
                         .HasAnnotation("Relational:JsonPropertyName", "coordinate");
 
                     b.Property<string>("platenumber")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("region")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("temperature")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("timestamp")
+                        .IsRequired()
                         .HasColumnType("TEXT")
                         .HasAnnotation("Relational:JsonPropertyName", "datetime");
 
-                    b.Property<float?>("vibration")
+                    b.Property<float>("vibration")
                         .HasColumnType("REAL");
 
-                    b.Property<float?>("width")
+                    b.Property<float>("width")
                         .HasColumnType("REAL")
                         .HasAnnotation("Relational:JsonPropertyName", "w");
 
-                    b.Property<float?>("x_offset")
+                    b.Property<float>("x_offset")
                         .HasColumnType("REAL")
                         .HasAnnotation("Relational:JsonPropertyName", "x");
 
-                    b.Property<float?>("y_offset")
+                    b.Property<float>("y_offset")
                         .HasColumnType("REAL")
                         .HasAnnotation("Relational:JsonPropertyName", "y");
 

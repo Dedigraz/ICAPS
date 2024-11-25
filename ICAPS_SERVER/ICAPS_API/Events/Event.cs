@@ -57,13 +57,3 @@ public class TransferObject
     public AnomalyType AnomalyType { get; set; }
 }
 
-public class ExternObj
-{
-    public string location { get; set; }
-    public float vibration { get; set; }
-    public float x_offset { get; set; }
-    public float y_offset { get; set; }
-    public float width { get; set; }
-    public float height { get; set; }
-    public int AnomalyType { get; set; }
-}

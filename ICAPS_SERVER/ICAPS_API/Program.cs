@@ -12,6 +12,7 @@ using ICAPS_API.Database;
 using Microsoft.EntityFrameworkCore;
 using ICAPS_API.Events;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 float[] currentLocation = new float[2] { 9.53742f, 6.45959f }; // Default location
@@ -27,12 +28,23 @@ if (string.IsNullOrEmpty(apiKey))
 {
     throw new InvalidOperationException("TomTom Api key missing, add the api key to environment variables, user secrets or in the appsettings.json to get the app running");
 }
+
+var itsApiUrl = builder.Configuration["Configuration:ITSApi"];
+if (string.IsNullOrEmpty(itsApiUrl))
+{
+    throw new InvalidOperationException("ITS API is not configured properly, add it to the environment variables to get the app running");
+}
+
 builder.Services.AddLogging();
 builder.Services.AddHttpLogging((options) =>
 {
     options.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
 });
 builder.Logging.AddConsole();
+
+builder.Services.AddHttpClient("itsApi",(e) =>{ 
+    e.BaseAddress = new Uri(itsApiUrl);
+    });
 
 builder.Services.AddSingleton<LogEventDb>();
 builder.Services.AddCors(options =>
@@ -57,6 +69,7 @@ builder.Services.ConfigureHttpJsonOptions(e =>
 {
     var enumConverter = new JsonStringEnumConverter<AnomalyType>();
     e.SerializerOptions.Converters.Add(enumConverter);
+    e.SerializerOptions.DefaultIgnoreCondition  = JsonIgnoreCondition.WhenWritingDefault;
 });
 builder.Services.AddControllers();
 builder.Services.AddWebSocketManager();

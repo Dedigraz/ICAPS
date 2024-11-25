@@ -1,7 +1,8 @@
 using ICAPS_API.Events;
 
 public class LogEventDb{
-    private readonly Dictionary<Guid, SortedList<DateTime, Event>> logEvents = new();
+    public readonly Dictionary<Guid, SortedList<DateTime, Event>> logEvents = new();
+    public 
 
     public void Append(Event @event){
         var stream  = logEvents!.GetValueOrDefault(@event.streamId, null);

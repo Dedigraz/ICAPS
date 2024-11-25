@@ -12,12 +12,15 @@ Queue* anomalies = {0};
 LatLng currentLocation;
 
 
-QNode* collectAnomalies(){
-  return nullptr;
+Anomaly* collectAnomalies(){
+  return nullptr ;
 }
 
-void addAnomalies(QNode *nodes, uint8_t size){
-  
+void addAnomalies(Anomaly *anomals, uint8_t size){
+  for(uint8_t i = 0; i < size; i++ ){
+    enqueue(anomalies, anomal);
+    anomals++;
+  }
 }
 
 void getCurrentLocation(){

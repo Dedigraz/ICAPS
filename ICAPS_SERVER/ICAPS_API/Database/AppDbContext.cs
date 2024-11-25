@@ -2,7 +2,8 @@ namespace ICAPS_API.Database;
 using Microsoft.EntityFrameworkCore;
 
 public class AppDbContext : DbContext{
-    public DbSet<Anomaly> Anomalies { get; set; }           
+    public DbSet<Anomaly> Anomalies { get; set; }     
+    public DbSet<ITSObj> ITSReturns { get;set;}
     public AppDbContext()
     {
         
