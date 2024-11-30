@@ -7,6 +7,23 @@ public record Anomaly(float lat, float lng, float offset, float width, float hei
 {
     [JsonIgnore]
     public int Id { get; init; }
+    [JsonPropertyName("i")]
+    public float vibrationIntensity { get; set; }
+    [JsonPropertyName("x")]
+    public float offset { get; set; }
+
+    public float lat { get; set; }
+    public float lng {get;set;}
+    [JsonPropertyName("w")]
+    public float width {get;set;}
+    [JsonPropertyName("h")]
+    public float height {get;set;}
+    public AnomalyType AnomalyType {get;set;}
+
+    public Anomaly( float lat, float lng, float offset, float width, float height, float vibrationIntensity, AnomalyType AnomalyType) : this(lat, lng, offset, width, height, AnomalyType)
+    {
+        this.vibrationIntensity = vibrationIntensity;
+    }
 
     public static Anomaly[] GetTestAnomalies()
     {

@@ -14,7 +14,7 @@ public class LogController : ControllerBase
     private readonly MessageHandler _messageHandler;
     private readonly HttpClient itsClient;
 
-    private readonly AppDbContext _dbContext;
+    // private readonly AppDbContext _dbContext;
 
     public LogController(LogEventDb logEventDb, ILogger<LogController> logger, MessageHandler messageHandler, IHttpClientFactory httpClientFactory, AppDbContext dbContext)
     {
@@ -22,7 +22,7 @@ public class LogController : ControllerBase
         _logger = logger;
         _messageHandler = messageHandler;
         itsClient = httpClientFactory.CreateClient("itsApi");
-        _dbContext = dbContext;
+        // _dbContext = dbContext;
     }
 
     [HttpGet("start")]
@@ -32,9 +32,11 @@ public class LogController : ControllerBase
             CreatedAtTimestamp = DateTime.UtcNow,
         };
         _logEventDb.Append(startTest);
-        string result =  await (await itsClient.GetAsync("/ret/len=0")).Content.ReadAsStringAsync();
-        _dbContext.ITSReturns.AddRange(JsonSerializer.Deserialize<IEnumerable<ITSObj>>(result));
-        await _dbContext.SaveChangesAsync();
+
+        var result =  await (await itsClient.GetAsync("/ret/len=0")).Content.ReadAsStreamAsync();
+        // _dbContext.ITSReturns.AddRange(JsonSerializer.Deserialize<IEnumerable<ITSObj>>(result));
+        // await _dbContext.SaveChangesAsync();
+        _logEventDb.ExternalData = (await JsonSerializer.DeserializeAsync<List<ITSObj>>(result))!;
         var message = JsonSerializer.Serialize(startTest);
         await _messageHandler.SendMessageToAllAsync(message);
         return TypedResults.Ok("Start Event");
@@ -75,7 +77,49 @@ public class LogController : ControllerBase
     [HttpGet("getAnomalies")]
     public IActionResult GetAnomalies()
     {
-        
-        return Ok(_dbContext.ITSReturns.ToList());
+        if (_logEventDb.ExternalData is [])
+        {
+            return NotFound("No data available, are you sure you started the test?");
+        }
+        return Ok(_logEventDb.ExternalData);
+    }
+
+    public void FromExernal()
+    {
+        List<Anomaly> anomalies = new();
+        foreach (var obj in _logEventDb.ExternalData)
+        {
+            var lat = float.Parse( obj.location.Split(' ')[0].Split('=')[1]);
+            var lng = float.Parse( obj.location.Split(' ')[1].Split('=')[1]);
+            var vibrationIntensity = 0;
+            float offset = obj.x_offset.GetValueOrDefault();
+            float width = obj.width.GetValueOrDefault();
+            float height = obj.height.GetValueOrDefault();
+            AnomalyType anomalyType;
+             switch (obj.AnomalyType.ToUpper())
+            {
+                case "CRACK":
+                    anomalyType = AnomalyType.CRACK;
+                    break;
+                case "POTHOLE":
+                    anomalyType = AnomalyType.POTHOLE;
+                    break;
+                case "SPEEDBUMP":
+                    anomalyType =  AnomalyType.SPEEDBUMP;
+                    break;
+                default:
+                    if(obj.temperature[] > 50)
+                    {
+                        anomalyType = AnomalyType.FIRE;
+                    }
+                    else
+                    {
+                        anomalyType = AnomalyType.VIBRATIONS;
+                        vibrationIntensity = obj.vibration;
+                    }
+                    break;
+            };
+            anomalies.Add(new Anomaly(lat,lng, offset,width,height,vibrationIntensity,anomalyType));
+        }
     }
 }

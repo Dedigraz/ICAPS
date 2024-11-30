@@ -25,11 +25,11 @@ public class StopTest : Event{
 
 public class CarLocatonUpdated : Event{
     public Guid carId {get;set;}
-    public float[] location {get;set;}
+    public float[] newLocation {get;set;}
     public override Guid streamId => carId;
 }
 
-public class ParametersSet : Event{
+public class TestParametersSet : Event{
     public Guid carId {get;set;}
     public float[] parameters {get;set;}
     public override Guid streamId => carId;
@@ -42,18 +42,3 @@ public class AnomalyFound : Event
 
     public override Guid streamId => carId;
 }
-//LocationUpdatedEvent
-//ParametersSetEvent
-//AnomalyFoundEvent
-public class TransferObject
-{
-    public float lat { get; set; }
-    public float lng { get; set; }
-    public float vibration { get; set; }
-    [JsonPropertyName("x")]
-    public float offset { get; set; }
-    public float width { get; set; }
-    public float height { get; set; }
-    public AnomalyType AnomalyType { get; set; }
-}
-

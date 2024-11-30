@@ -1,8 +1,9 @@
+using ICAPS_API.Database;
 using ICAPS_API.Events;
 
 public class LogEventDb{
     public readonly Dictionary<Guid, SortedList<DateTime, Event>> logEvents = new();
-    public 
+    public List<ITSObj> ExternalData { get; set; }
 
     public void Append(Event @event){
         var stream  = logEvents!.GetValueOrDefault(@event.streamId, null);
