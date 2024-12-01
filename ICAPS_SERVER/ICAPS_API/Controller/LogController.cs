@@ -84,6 +84,7 @@ public class LogController : ControllerBase
         return Ok(_logEventDb.ExternalData);
     }
 
+    [ApiExplorerSettings(IgnoreApi = true)]
     public void FromExernal()
     {
         List<Anomaly> anomalies = new();
@@ -108,14 +109,14 @@ public class LogController : ControllerBase
                     anomalyType =  AnomalyType.SPEEDBUMP;
                     break;
                 default:
-                    if(obj.temperature[] > 50)
+                    if(int.Parse(obj.temperature.Split('c')[0]) > 50)
                     {
                         anomalyType = AnomalyType.FIRE;
                     }
                     else
                     {
                         anomalyType = AnomalyType.VIBRATIONS;
-                        vibrationIntensity = obj.vibration;
+                        vibrationIntensity = 0;
                     }
                     break;
             };
