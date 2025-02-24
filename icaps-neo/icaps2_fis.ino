@@ -9,126 +9,203 @@
 /* FIS Object */
 static qFIS_t icaps2;
 /* I/O Fuzzy Objects */
-static qFIS_Input_t icaps2_inputs[ 5 ];
-static qFIS_Output_t icaps2_outputs[ 2 ];
+static qFIS_Input_t icaps2_inputs[5];
+static qFIS_Output_t icaps2_outputs[2];
 /* I/O Membership Objects */
-static qFIS_MF_t MFin[ 17 ], MFout[ 7 ];
+static qFIS_MF_t MFin[17], MFout[7];
 /* I/O Names */
-enum { height, width, type, vibration, x };
-enum { skew, throttle };
-/* I/O Membership functions tags */
-enum { height_small, height_mid, height_big, width_small, width_mid, width_big, type_vibration, type_crack, type_speedbump, type_pothole, type_fire, vibration_light, vibration_moderate, vibration_high, x_left, x_center, x_right };
-enum { skew_left, skew_no_change, skew_right, throttle_stationary, throttle_heavy, throttle_light, throttle_no_throttle };
-/* Rules of the inference system */
-static const qFIS_Rules_t rules[] = { 
-    QFIS_RULES_BEGIN
-       IF vibration IS vibration_high THEN skew IS skew_no_change AND throttle IS throttle_heavy END
-       IF height IS height_small AND width IS width_small AND type IS type_crack AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_no_throttle END
-       IF height IS height_small AND width IS width_mid AND type IS type_crack AND x IS x_left THEN skew IS skew_right AND throttle IS throttle_light END
-       IF height IS height_mid AND width IS width_mid AND type IS type_crack AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_light END
-       IF height IS height_mid AND width IS width_big AND type IS type_crack AND x IS x_right THEN skew IS skew_left AND throttle IS throttle_light END
-       IF height IS height_big AND width IS width_big AND type IS type_crack AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_light END
-       IF height IS height_small AND width IS width_small AND type IS type_pothole AND x IS x_left THEN skew IS skew_right AND throttle IS throttle_heavy END
-       IF height IS height_mid AND width IS width_mid AND type IS type_pothole AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_heavy END
-       IF height IS height_big AND width IS width_big AND type IS type_pothole AND x IS x_right THEN skew IS skew_left AND throttle IS throttle_heavy END
-       IF height IS height_big AND width IS width_big AND type IS type_pothole AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_heavy END
-       IF height IS height_big AND width IS width_mid AND type IS type_pothole AND x IS x_right THEN skew IS skew_left AND throttle IS throttle_heavy END
-       IF type IS type_speedbump THEN skew IS skew_no_change AND throttle IS throttle_heavy END
-       IF width IS width_small AND type IS type_fire AND x IS x_left THEN skew IS skew_right AND throttle IS throttle_heavy END
-       IF width IS width_mid AND type IS type_fire AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_heavy END
-       IF width IS width_big AND type IS type_fire AND x IS x_right THEN skew IS skew_left AND throttle IS throttle_heavy END
-       IF width IS width_big AND type IS type_fire AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_heavy END
-    QFIS_RULES_END
+enum
+{
+    height,
+    width,
+    type,
+    vibration,
+    x
 };
+enum
+{
+    skew,
+    throttle
+};
+/* I/O Membership functions tags */
+enum
+{
+    height_small,
+    height_mid,
+    height_big,
+    width_small,
+    width_mid,
+    width_big,
+    type_vibration,
+    type_crack,
+    type_speedbump,
+    type_pothole,
+    type_fire,
+    vibration_light,
+    vibration_moderate,
+    vibration_high,
+    x_left,
+    x_center,
+    x_right
+};
+enum
+{
+    skew_left,
+    skew_no_change,
+    skew_right,
+    throttle_stationary,
+    throttle_heavy,
+    throttle_light,
+    throttle_no_throttle
+};
+/* Rules of the inference system */
+static const qFIS_Rules_t rules[] = {
+    QFIS_RULES_BEGIN
+        IF vibration IS vibration_high THEN skew IS skew_no_change AND throttle IS throttle_heavy END
+            IF height IS height_small AND width IS width_small AND type IS type_crack AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_no_throttle END
+                IF height IS height_small AND width IS width_mid AND type IS type_crack AND x IS x_left THEN skew IS skew_right AND throttle IS throttle_light END
+                    IF height IS height_mid AND width IS width_mid AND type IS type_crack AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_light END
+                        IF height IS height_mid AND width IS width_big AND type IS type_crack AND x IS x_right THEN skew IS skew_left AND throttle IS throttle_light END
+                            IF height IS height_big AND width IS width_big AND type IS type_crack AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_light END
+                                IF height IS height_small AND width IS width_small AND type IS type_pothole AND x IS x_left THEN skew IS skew_right AND throttle IS throttle_heavy END
+                                    IF height IS height_mid AND width IS width_mid AND type IS type_pothole AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_heavy END
+                                        IF height IS height_big AND width IS width_big AND type IS type_pothole AND x IS x_right THEN skew IS skew_left AND throttle IS throttle_heavy END
+                                            IF height IS height_big AND width IS width_big AND type IS type_pothole AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_heavy END
+                                                IF height IS height_big AND width IS width_mid AND type IS type_pothole AND x IS x_right THEN skew IS skew_left AND throttle IS throttle_heavy END
+                                                    IF type IS type_speedbump THEN skew IS skew_no_change AND throttle IS throttle_heavy END
+                                                        IF width IS width_small AND type IS type_fire AND x IS x_left THEN skew IS skew_right AND throttle IS throttle_heavy END
+                                                            IF width IS width_mid AND type IS type_fire AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_heavy END
+                                                                IF width IS width_big AND type IS type_fire AND x IS x_right THEN skew IS skew_left AND throttle IS throttle_heavy END
+                                                                    IF width IS width_big AND type IS type_fire AND x IS x_center THEN skew IS skew_no_change AND throttle IS throttle_heavy END
+                                                                        QFIS_RULES_END};
 /* Rule strengths */
-float rStrength[ 16 ] = { 0.0f };
+float rStrength[16] = {0.0f};
 
 /* Parameters of the membership functions */
-static const float height_small_p[] = { -177.5000f, 0.0000f, 68.7179f };
-static const float height_mid_p[] = { 35.5000f, 213.0000f, 390.5000f };
-static const float height_big_p[] = { 340.0393f, 426.0000f, 603.5000f };
-static const float width_small_p[] = { -177.5000f, 0.0000f, 72.2679f };
-static const float width_mid_p[] = { 35.5000f, 213.0000f, 390.5000f };
-static const float width_big_p[] = { 351.1964f, 426.0000f, 603.5000f };
-static const float type_vibration_p[] = { -0.0149f, 0.4809f, 0.9767f };
-static const float type_crack_p[] = { 0.8875f, 1.3958f, 2.0458f };
-static const float type_speedbump_p[] = { 1.9792f, 2.3333f, 3.0375f };
-static const float type_pothole_p[] = { 2.9375f, 3.5000f, 4.0208f };
-static const float type_fire_p[] = { 3.9542f, 4.6667f, 5.0458f };
-static const float vibration_light_p[] = { -0.4167f, 0.0000f, 0.4167f };
-static const float vibration_moderate_p[] = { 0.0833f, 0.5000f, 0.9167f };
-static const float vibration_high_p[] = { 0.5833f, 1.0000f, 1.4167f };
-static const float x_left_p[] = { -0.4167f, 0.0000f, 0.4167f };
-static const float x_center_p[] = { 0.0833f, 0.5000f, 0.9167f };
-static const float x_right_p[] = { 0.5833f, 1.0000f, 1.4167f };
-static const float skew_left_p[] = { -0.0090f, 0.2500f, 0.4583f };
-static const float skew_no_change_p[] = { 0.4247f, 0.5000f, 0.5777f };
-static const float skew_right_p[] = { 0.5441f, 0.7524f, 1.0102f };
-static const float throttle_stationary_p[] = { -0.2778f, 0.0000f, 0.0209f };
-static const float throttle_heavy_p[] = { 0.0054f, 0.2832f, 0.5681f };
-static const float throttle_light_p[] = { 0.5442f, 0.7497f, 0.9743f };
-static const float throttle_no_throttle_p[] = { 0.9648f, 0.9982f, 1.0000f };
+static const float height_small_p[] = {-177.5000f, 0.0000f, 68.7179f};
+static const float height_mid_p[] = {35.5000f, 213.0000f, 390.5000f};
+static const float height_big_p[] = {340.0393f, 426.0000f, 603.5000f};
+static const float width_small_p[] = {-177.5000f, 0.0000f, 72.2679f};
+static const float width_mid_p[] = {35.5000f, 213.0000f, 390.5000f};
+static const float width_big_p[] = {351.1964f, 426.0000f, 603.5000f};
+static const float type_vibration_p[] = {-0.0149f, 0.4809f, 0.9767f};
+static const float type_crack_p[] = {0.8875f, 1.3958f, 2.0458f};
+static const float type_speedbump_p[] = {1.9792f, 2.3333f, 3.0375f};
+static const float type_pothole_p[] = {2.9375f, 3.5000f, 4.0208f};
+static const float type_fire_p[] = {3.9542f, 4.6667f, 5.0458f};
+static const float vibration_light_p[] = {-0.4167f, 0.0000f, 0.4167f};
+static const float vibration_moderate_p[] = {0.0833f, 0.5000f, 0.9167f};
+static const float vibration_high_p[] = {0.5833f, 1.0000f, 1.4167f};
+static const float x_left_p[] = {-0.4167f, 0.0000f, 0.4167f};
+static const float x_center_p[] = {0.0833f, 0.5000f, 0.9167f};
+static const float x_right_p[] = {0.5833f, 1.0000f, 1.4167f};
+static const float skew_left_p[] = {-0.0090f, 0.2500f, 0.4583f};
+static const float skew_no_change_p[] = {0.4247f, 0.5000f, 0.5777f};
+static const float skew_right_p[] = {0.5441f, 0.7524f, 1.0102f};
+static const float throttle_stationary_p[] = {-0.2778f, 0.0000f, 0.0209f};
+static const float throttle_heavy_p[] = {0.0054f, 0.2832f, 0.5681f};
+static const float throttle_light_p[] = {0.5442f, 0.7497f, 0.9743f};
+static const float throttle_no_throttle_p[] = {0.9648f, 0.9982f, 1.0000f};
 
-void icaps2_init( void ){
+void icaps2_init(void)
+{
     /* Set inputs */
-    qFIS_InputSetup( icaps2_inputs, height, 0.0000f, 426.0000f );
-    qFIS_InputSetup( icaps2_inputs, width, 0.0000f, 426.0000f );
-    qFIS_InputSetup( icaps2_inputs, type, 0.0000f, 5.0000f );
-    qFIS_InputSetup( icaps2_inputs, vibration, 0.0000f, 1.0000f );
-    qFIS_InputSetup( icaps2_inputs, x, 0.0000f, 1.0000f );
+    qFIS_InputSetup(icaps2_inputs, height, 0.0000f, 426.0000f);
+    qFIS_InputSetup(icaps2_inputs, width, 0.0000f, 426.0000f);
+    qFIS_InputSetup(icaps2_inputs, type, 0.0000f, 5.0000f);
+    qFIS_InputSetup(icaps2_inputs, vibration, 0.0000f, 1.0000f);
+    qFIS_InputSetup(icaps2_inputs, x, 0.0000f, 1.0000f);
     /* Set outputs */
-    qFIS_OutputSetup( icaps2_outputs, skew, 0.0000f, 1.0000f );
-    qFIS_OutputSetup( icaps2_outputs, throttle, 0.0000f, 1.0000f );
+    qFIS_OutputSetup(icaps2_outputs, skew, 0.0000f, 1.0000f);
+    qFIS_OutputSetup(icaps2_outputs, throttle, 0.0000f, 1.0000f);
     /* Set membership functions for the inputs */
-    qFIS_SetMF( MFin, height, height_small, trimf, NULL, height_small_p, 1.0f );
-    qFIS_SetMF( MFin, height, height_mid, trimf, NULL, height_mid_p, 1.0f );
-    qFIS_SetMF( MFin, height, height_big, trimf, NULL, height_big_p, 1.0f );
-    qFIS_SetMF( MFin, width, width_small, trimf, NULL, width_small_p, 1.0f );
-    qFIS_SetMF( MFin, width, width_mid, trimf, NULL, width_mid_p, 1.0f );
-    qFIS_SetMF( MFin, width, width_big, trimf, NULL, width_big_p, 1.0f );
-    qFIS_SetMF( MFin, type, type_vibration, trimf, NULL, type_vibration_p, 1.0f );
-    qFIS_SetMF( MFin, type, type_crack, trimf, NULL, type_crack_p, 1.0f );
-    qFIS_SetMF( MFin, type, type_speedbump, trimf, NULL, type_speedbump_p, 1.0f );
-    qFIS_SetMF( MFin, type, type_pothole, trimf, NULL, type_pothole_p, 1.0f );
-    qFIS_SetMF( MFin, type, type_fire, trimf, NULL, type_fire_p, 1.0f );
-    qFIS_SetMF( MFin, vibration, vibration_light, trimf, NULL, vibration_light_p, 1.0f );
-    qFIS_SetMF( MFin, vibration, vibration_moderate, trimf, NULL, vibration_moderate_p, 1.0f );
-    qFIS_SetMF( MFin, vibration, vibration_high, trimf, NULL, vibration_high_p, 1.0f );
-    qFIS_SetMF( MFin, x, x_left, trimf, NULL, x_left_p, 1.0f );
-    qFIS_SetMF( MFin, x, x_center, trimf, NULL, x_center_p, 1.0f );
-    qFIS_SetMF( MFin, x, x_right, trimf, NULL, x_right_p, 1.0f );
+    qFIS_SetMF(MFin, height, height_small, trimf, NULL, height_small_p, 1.0f);
+    qFIS_SetMF(MFin, height, height_mid, trimf, NULL, height_mid_p, 1.0f);
+    qFIS_SetMF(MFin, height, height_big, trimf, NULL, height_big_p, 1.0f);
+    qFIS_SetMF(MFin, width, width_small, trimf, NULL, width_small_p, 1.0f);
+    qFIS_SetMF(MFin, width, width_mid, trimf, NULL, width_mid_p, 1.0f);
+    qFIS_SetMF(MFin, width, width_big, trimf, NULL, width_big_p, 1.0f);
+    qFIS_SetMF(MFin, type, type_vibration, trimf, NULL, type_vibration_p, 1.0f);
+    qFIS_SetMF(MFin, type, type_crack, trimf, NULL, type_crack_p, 1.0f);
+    qFIS_SetMF(MFin, type, type_speedbump, trimf, NULL, type_speedbump_p, 1.0f);
+    qFIS_SetMF(MFin, type, type_pothole, trimf, NULL, type_pothole_p, 1.0f);
+    qFIS_SetMF(MFin, type, type_fire, trimf, NULL, type_fire_p, 1.0f);
+    qFIS_SetMF(MFin, vibration, vibration_light, trimf, NULL, vibration_light_p, 1.0f);
+    qFIS_SetMF(MFin, vibration, vibration_moderate, trimf, NULL, vibration_moderate_p, 1.0f);
+    qFIS_SetMF(MFin, vibration, vibration_high, trimf, NULL, vibration_high_p, 1.0f);
+    qFIS_SetMF(MFin, x, x_left, trimf, NULL, x_left_p, 1.0f);
+    qFIS_SetMF(MFin, x, x_center, trimf, NULL, x_center_p, 1.0f);
+    qFIS_SetMF(MFin, x, x_right, trimf, NULL, x_right_p, 1.0f);
     /* Set membership functions for the outputs */
-    qFIS_SetMF( MFout, skew, skew_left, trimf, NULL, skew_left_p, 1.0f );
-    qFIS_SetMF( MFout, skew, skew_no_change, trimf, NULL, skew_no_change_p, 1.0f );
-    qFIS_SetMF( MFout, skew, skew_right, trimf, NULL, skew_right_p, 1.0f );
-    qFIS_SetMF( MFout, throttle, throttle_stationary, trimf, NULL, throttle_stationary_p, 1.0f );
-    qFIS_SetMF( MFout, throttle, throttle_heavy, trimf, NULL, throttle_heavy_p, 1.0f );
-    qFIS_SetMF( MFout, throttle, throttle_light, trimf, NULL, throttle_light_p, 1.0f );
-    qFIS_SetMF( MFout, throttle, throttle_no_throttle, trimf, NULL, throttle_no_throttle_p, 1.0f );
+    qFIS_SetMF(MFout, skew, skew_left, trimf, NULL, skew_left_p, 1.0f);
+    qFIS_SetMF(MFout, skew, skew_no_change, trimf, NULL, skew_no_change_p, 1.0f);
+    qFIS_SetMF(MFout, skew, skew_right, trimf, NULL, skew_right_p, 1.0f);
+    qFIS_SetMF(MFout, throttle, throttle_stationary, trimf, NULL, throttle_stationary_p, 1.0f);
+    qFIS_SetMF(MFout, throttle, throttle_heavy, trimf, NULL, throttle_heavy_p, 1.0f);
+    qFIS_SetMF(MFout, throttle, throttle_light, trimf, NULL, throttle_light_p, 1.0f);
+    qFIS_SetMF(MFout, throttle, throttle_no_throttle, trimf, NULL, throttle_no_throttle_p, 1.0f);
 
     /* Configure the Inference System */
-    qFIS_Setup( &icaps2, Mamdani,
-                icaps2_inputs, sizeof(icaps2_inputs),
-                icaps2_outputs, sizeof(icaps2_outputs),
-                MFin, sizeof(MFin), MFout, sizeof(MFout),
-                rules, rStrength, 16u );
+    qFIS_Setup(&icaps2, Mamdani,
+               icaps2_inputs, sizeof(icaps2_inputs),
+               icaps2_outputs, sizeof(icaps2_outputs),
+               MFin, sizeof(MFin), MFout, sizeof(MFout),
+               rules, rStrength, 16u);
 }
 
-void icaps2_run( Anomaly *inputs, void (*moveFunction) (float,float)) {
-    /* Set the crips inputs */
-    qFIS_SetInput( icaps2_inputs, height, inputs->height  );
-    qFIS_SetInput( icaps2_inputs, width, inputs->width );
-    qFIS_SetInput( icaps2_inputs, type, inputs->type  );
-    qFIS_SetInput( icaps2_inputs, vibration, inputs->vibration );
-    qFIS_SetInput( icaps2_inputs, x, inputs->x );
+// Modify icaps2_run to return Move*
+Move *icaps2_run(Anomaly *input)
+{
+    USE_SERIAL.println("6");
+    qFIS_SetInput(icaps2_inputs, height, input->height);
+    qFIS_SetInput(icaps2_inputs, width, input->width);
+    qFIS_SetInput(icaps2_inputs, type, input->type);
+    qFIS_SetInput(icaps2_inputs, vibration, input->vibration);
+    qFIS_SetInput(icaps2_inputs, x, input->x);
 
-    qFIS_Fuzzify( &icaps2 );
-    if ( qFIS_Inference( &icaps2 ) > 0 ) {
-        qFIS_DeFuzzify( &icaps2 );
-    }
-    else {
-        
+    USE_SERIAL.println("7");
+    qFIS_Fuzzify(&icaps2);
+
+    Move *emergencyMove = NULL;
+
+    if (qFIS_Inference(&icaps2) > 0)
+    {
+        qFIS_DeFuzzify(&icaps2);
+
+        // Create new move based on fuzzy output
+        emergencyMove = (Move *)malloc(sizeof(Move));
+        if (emergencyMove != NULL)
+        {
+            float rawSkew = qFIS_GetOutput(icaps2_outputs, skew);
+            
+            // Map the fuzzy skew output to actual angles:
+            // 0-0.46 maps to -90-0 (left turn)
+            // 0.46-0.54 maps to 0 (no turn)
+            // 0.54-1 maps to 0-90 (right turn)
+            if (rawSkew < 0.46f) {
+                // Left turn: map 0-0.46 to -90-0
+                emergencyMove->skew = (rawSkew - 0.46f) * (90.0f/0.46f);
+            } 
+            else if (rawSkew > 0.54f) {
+                // Right turn: map 0.54-1 to 0-90
+                emergencyMove->skew = (rawSkew - 0.54f) * (90.0f/0.46f);
+            }
+            else {
+                // No turn
+                emergencyMove->skew = 0;
+            }
+            
+            emergencyMove->speed = qFIS_GetOutput(icaps2_outputs, throttle) * DEFAULT_MOTOR_SPEED;
+            emergencyMove->reverse = false;
+            emergencyMove->duration = EMERGENCY_MOVE_DURATION;
+        }
     }
 
-    moveFunction(qFIS_GetOutput( icaps2_outputs, skew ), qFIS_GetOutput( icaps2_outputs, throttle ));
+    USE_SERIAL.println("8");
+    USE_SERIAL.printf("raw skew is %.2f, mapped skew is %.2f, throttle is %.2f \n",
+                      qFIS_GetOutput(icaps2_outputs, skew),
+                      emergencyMove ? emergencyMove->skew : 0,
+                      qFIS_GetOutput(icaps2_outputs, throttle));
+
+    return emergencyMove;
 }
