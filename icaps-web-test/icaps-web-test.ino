@@ -15,10 +15,10 @@
 #define TXD2 17
 #define GPS_BAUD 9600
 
-#define WIFI_SSID "Public"
-#define WIFI_PASS "12345678"
+#define WIFI_SSID "CarWifi" //"NOKIA-A130"
+#define WIFI_PASS "ICAPSWifi" //"NancyG00ber"
 
-#define WS_URL "192.168.137.1"
+#define WS_URL "192.168.10.163"
 #define WS_PORT 5007
 
 
@@ -108,6 +108,7 @@ void sendUpdate() {
   doc["lat"] = lat;
   doc["lng"] = lat;
   doc["maneuver"] = maneuver;
+
   //Replace with actual maneuver
   // doc["timestamp"] = getTimestamp();
   // //Implement this function to get current timestamp
@@ -157,16 +158,21 @@ void setup() {
   printLocalTime();
 
 
-  //Start Serial 2 with the defined RX and TX pins and a baud rate of 9600 gpsSerial.begin(GPS_BAUD, SERIAL_8N1, RXD2, TXD2);
+  //Start Serial 2 with the defined RX and TX pins and a baud rate of 9600 gps
+  Serial2.begin(GPS_BAUD, SERIAL_8N1, RXD2, TXD2);
   Serial.println("Serial 2 started at 9600 baud rate");
 }
 
 void loop() {
   //This sketch displays information every time a new sentence is correctly encoded.unsigned long start = millis();
-
+  while (Serial2.available() > 0)
+    gps.encode(Serial2.read());                                                                                                                                                                                           
   webSocket.loop();
 
+  // Serial.printf("LAT =%.6f\n", gps.location.lat());
+  // Serial.printf("LNG =%.6f\n", gps.location.lng());
   for(size_t i = 0; i < 1; i++){
+    
     sendUpdate();
   }
 }
